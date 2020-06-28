@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title>Cute file browser</title>
+	<link href="assets/css/styles.css" rel="stylesheet"/>
+	<link href="assets/css/jquery.fancybox.css" rel="stylesheet"/>
+
+</head>
+<body>
+
+	<div class="filemanager">
+
+		<div class="search">
+			<input type="search" placeholder="Find a file.." />
+		</div>
+
+		<div class="breadcrumbs"></div>
+
+		<div class="data"></div>
+
+		<div class="nothingfound">
+			<div class="nofiles"></div>
+			<span>No files here.</span>
+		</div>
+
+	</div>
+
+	<!-- 
+		Include our script files 
+		<script src="assets/js/jquery.livequery.min.js" type="text/javascript" ></script>
+		usage of livequery:
+			// $('#DOMWindow:visible').livequery(function() {
+			// 	alert("DOMWindow is visible");
+			// });
+
+			// $('#DOMWindow:hidden').livequery(function() {
+			// 	alert("DOMWindow is hidden");
+			// });
+	-->
+	
+	<script src="assets/js/jquery-1.11-min.js" type="text/javascript" ></script>
+	<script src="assets/js/script.js" type="text/javascript" ></script>
+	<script src="assets/js/jquery.DOMWindow.js" type="text/javascript" ></script>
+	<script src="assets/js/jquery.fancybox.js" type="text/javascript"></script>
+	
+	<script type="text/javascript">
+
+		class Player {
+			constructor(path, filename) {
+				this.path = path;
+				this.filename = filename;
+				this.ext = /[^.]+$/.exec(filename)[0].toLowerCase();
+				this.name = filename.slice(0, filename.search(this.ext) - 1);
+				this.size = {width: 850, height: 150};
+			}
+
+			getCode() {
+				return `<a href="${this.path + this.filename}"></a>`;
+			}
+
+			show() {
+				$("#media > a").fancybox().click();
+			}
+
+		}		
+
+		class VideoPlayer extends Player {
+			constructor(path, filename) {
+				super(path, filename);
+				this.size = this.getPreviewSize();
+			}
+
+			getPreviewSize() {
+				let size = {width: 850, height: 550};
+				// set window.screen.orientation.onchange = ...
+
+				if(String(window.screen.orientation.type).includes("portrait")
+					&& window.frames.visualViewport.width > 1000) {
+					size.width = window.frames.visualViewport.width / 1.2;
+					size.height = size.width / 1.54;
+				} else if (String(window.screen.orientation.type).includes("portrait")) {
+					size.width = window.frames.visualViewport.width / 1.2;
+					size.height = size.width / 1.54;
+				} else if(String(window.screen.orientation.type).includes("landscape")
+					&& window.frames.visualViewport.height > 700) {
+						size.height = window.frames.visualViewport.height / 1.5;
+						size.width = size.height * 1.54;
+				} else if (String(window.screen.orientation.type).includes("landscape")) {
+					size.height = window.frames.visualViewport.height / 1.2;
+					size.width = size.height * 1.54;					
+				}
+
+				return size;
+			}
+
+			getCode() {
+				return `<div class = "player">\r
+					<span style = "color: #ccc;">${this.name}</span> \r
+					<video id="player" style="width:${(this.size.width - 10)}px; height:${(this.size.height - 20)}px;" controls autoplay preload="metadata"> \r
+						<source src="${this.path + this.filename}#t=0.5" type="video/${this.ext}"> \r
+						Your browser does not support the video content. \r
+					</video>\r
+				</div>`;
+			}
+
+			show() {
+				$.fn.openDOMWindow({ 
+					loader:1, 
+					loaderImagePath:'assets/images/giphy.gif', 
+					loaderHeight:16, 
+					loaderWidth:17, 
+					height:this.size.height,
+					width:this.size.width,
+					windowSourceID:'#media',
+					overlayColor:'#222',
+					windowBGColor:'#222',
+					borderSize: 1,
+					functionCallOnClose: function () { 
+						$('#player').get(0).pause();
+					}
+				}); 
+			}
+		}
+
+		class AudioPlayer extends Player {
+			constructor(path, filename) {
+				super(path, filename);
+				this.size = this.getPreviewSize();
+			}
+
+			getPreviewSize() {
+				let size = {width: 850, height: 150};
+				// set window.screen.orientation.onchange = ...
+
+				if(String(window.screen.orientation.type).includes("portrait")
+					&& window.frames.visualViewport.width > 1000) {
+						size.width = window.frames.visualViewport.width / 1.2;
+						size.height = size.width / 6.5;
+				} else if (String(window.screen.orientation.type).includes("portrait")) {
+					size.width = window.frames.visualViewport.width / 1.2;
+					size.height = size.width / 4;
+				} else if(String(window.screen.orientation.type).includes("landscape")
+					&& window.frames.visualViewport.height > 700) {
+						size.width = window.frames.visualViewport.width / 1.4;
+						size.height = size.width / 6.5;
+				} else if (String(window.screen.orientation.type).includes("landscape")) {
+					size.width = window.frames.visualViewport.width / 1.4;
+					size.height = size.width / 4;					
+				}
+
+				return size;
+			}
+
+			getCode() {
+				return `<div class = "player">\r
+					<span style = "color: #ccc;">${this.name}</span> \r
+					<audio id="player" style="width:${(this.size.width - 10)}px; height:${(this.size.height - 20)}px;" controls autoplay preload="metadata"> \r
+						<source src="${this.path + this.filename}" type="audio/${this.ext}"> \r
+						Your browser does not support the audio content. \r
+					</audio>\r
+				</div>`;
+			}
+
+			show() {
+				$.fn.openDOMWindow({ 
+					loader:1, 
+					loaderImagePath:'assets/images/giphy.gif', 
+					loaderHeight:16, 
+					loaderWidth:17, 
+					height:this.size.height,
+					width:this.size.width,
+					windowSourceID:'#media',
+					overlayColor:'#222',
+					windowBGColor:'#222',
+					borderSize: 1,
+					functionCallOnClose: function () { 
+						$('#player').get(0).pause();
+					}
+				}); 
+			}
+
+		}
+
+		class PlayerFactory {
+			constructor(filepath) {
+				this.path = filepath.split("/").slice(0, -1).join("/") + "/";
+				this.filename = filepath.split("/").pop();
+				this.ext = /[^.]+$/.exec(filepath)[0];
+				this.player = null;
+			}
+
+			getPlayer() {
+				switch(this.ext) {
+					case "mp4":
+						this.player = new VideoPlayer(this.path, this.filename);
+						break;
+					case "mp3":
+						this.player = new AudioPlayer(this.path, this.filename);
+						break;
+					default:
+						this.player = new Player(this.path, this.filename);
+				}
+				return this.player;
+			}
+		}
+
+		$(document).ready(function() {
+
+			$('.filemanager').find('.data').on('click', 'div.files', function(){
+				
+				let player = new PlayerFactory($(this).attr('title')).getPlayer();
+				$('#media').html(player.getCode());
+				player.show();
+				
+				return false; 
+			}); 
+			
+		});
+	</script>
+
+	<div id="media" style="display:none;"> </div>
+
+</body>
+</html>
