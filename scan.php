@@ -2,6 +2,10 @@
 
 $dir = "files";
 
+if ($_GET["dir"]) {
+	$dir = $_GET["dir"];
+}
+
 // Run the recursive function 
 
 $response = scan($dir);

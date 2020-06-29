@@ -97,8 +97,8 @@
 
 			getCode() {
 				return `<div class = "player">\r
-					<span style = "color: #ccc;">${this.name}</span> \r
-					<video id="player" style="width:${(this.size.width - 10)}px; height:${(this.size.height - 20)}px;" controls autoplay preload="metadata"> \r
+					<div id = "control_bar"><span style = "color: #ccc;">${this.filename}</span></div>\r
+					<video id="player" style="width:${(this.size.width - 10)}px; height:${(this.size.height - 30)}px;" controls autoplay preload="metadata"> \r
 						<source src="${this.path + this.filename}#t=0.5" type="video/${this.ext}"> \r
 						Your browser does not support the video content. \r
 					</video>\r
@@ -120,8 +120,61 @@
 					functionCallOnClose: function () { 
 						$('#player').get(0).pause();
 					}
-				}); 
+				});
+				
+				$("video").on("click", function(){this.blur()});
+				this.addControls($("#control_bar"), this.path, this.filename);
 			}
+
+			/**
+			 * TODO: refactor this ugly crap:
+			 */
+			addControls(root, path, filename) {
+				let self = this;
+				$.get(`scan.php?dir=${path}`, function(data) {
+					let prev = "", curr = `<span id="curr" style = "color: #ccc;">${filename}</span>`, next = "";
+					let response = JSON.parse(JSON.stringify(data));
+					response.items = response.items.filter(item => (item.type == "file" 
+						&& /[^.]+$/.exec(item.name)[0].toLowerCase() == "mp4"));
+					
+					let idx = response.items.indexOf(response.items.find(item => item.name == filename));
+
+					if ( idx == 0)  {
+						next = `<span id="next" class="playpack" title="${path + response.items[idx + 1].name}">&#8680;</span>`;
+					} else if (idx == response.items.length - 1) {
+						prev = `<span id="prev" class="playpack" title="${path + response.items[idx - 1].name}">&#8678;</span>`;
+					} else {
+						prev = `<span id="prev" class="playpack" title="${path + response.items[idx - 1].name}">&#8678;</span>`;
+						next = `<span id="next" class="playpack" title="${path + response.items[idx + 1].name}">&#8680;</span>`;
+					}
+					
+					root.html(prev.concat(curr).concat(next));
+
+					$("#prev").on("click", (e) => {
+						e.preventDefault();
+						let player = document.getElementById('player');
+						player.pause();
+						idx -= 1;
+						let prevFilename = response.items[idx].name;
+						self.addControls(root, path, prevFilename);
+						player.src = path + prevFilename;
+						player.play();
+					});
+					
+					$("#next").on("click", (e) => {
+						e.preventDefault();
+						let player = document.getElementById('player');
+						player.pause();
+						idx += 1;
+						let nextFilename = response.items[idx].name;
+						self.addControls(root, path, nextFilename);
+						player.src = path + nextFilename;
+						player.play();
+					});
+				});
+
+			}
+
 		}
 
 		class AudioPlayer extends Player {
@@ -144,10 +197,10 @@
 				} else if(String(window.screen.orientation.type).includes("landscape")
 					&& window.frames.visualViewport.height > 700) {
 						size.width = window.frames.visualViewport.width / 1.4;
-						size.height = size.width / 6.5;
+						size.height = size.width / 9;
 				} else if (String(window.screen.orientation.type).includes("landscape")) {
 					size.width = window.frames.visualViewport.width / 1.4;
-					size.height = size.width / 4;					
+					size.height = size.width / 6;					
 				}
 
 				return size;
@@ -155,7 +208,7 @@
 
 			getCode() {
 				return `<div class = "player">\r
-					<span style = "color: #ccc;">${this.name}</span> \r
+					<div id="control_bar"><span style = "color: #ccc;">${this.filename}</span></div>\r
 					<audio id="player" style="width:${(this.size.width - 10)}px; height:${(this.size.height - 20)}px;" controls autoplay preload="metadata"> \r
 						<source src="${this.path + this.filename}" type="audio/${this.ext}"> \r
 						Your browser does not support the audio content. \r
@@ -178,9 +231,60 @@
 					functionCallOnClose: function () { 
 						$('#player').get(0).pause();
 					}
-				}); 
+				});
+				
+				$("audio").on("click", function(){this.blur()});
+				this.addControls($("#control_bar"), this.path, this.filename);
 			}
 
+			/**
+			 * TODO: refactor this ugly crap:
+			 */
+			addControls(root, path, filename) {
+				let self = this;
+				$.get(`scan.php?dir=${path}`, function(data) {
+					let prev = "", curr = `<span id="curr" style = "color: #ccc;">${filename}</span>`, next = "";
+					let response = JSON.parse(JSON.stringify(data));
+					response.items = response.items.filter(item => (item.type == "file" 
+						&& /[^.]+$/.exec(item.name)[0].toLowerCase() == "mp3"));
+					
+					let idx = response.items.indexOf(response.items.find(item => item.name == filename));
+
+					if ( idx == 0)  {
+						next = `<span id="next" class="playpack" title="${path + response.items[idx + 1].name}">&#8680;</span>`;
+					} else if (idx == response.items.length - 1) {
+						prev = `<span id="prev" class="playpack" title="${path + response.items[idx - 1].name}">&#8678;</span>`;
+					} else {
+						prev = `<span id="prev" class="playpack" title="${path + response.items[idx - 1].name}">&#8678;</span>`;
+						next = `<span id="next" class="playpack" title="${path + response.items[idx + 1].name}">&#8680;</span>`;
+					}
+					
+					root.html(prev.concat(curr).concat(next));
+
+					$("#prev").on("click", (e) => {
+						e.preventDefault();
+						let player = document.getElementById('player');
+						player.pause();
+						idx -= 1;
+						let prevFilename = response.items[idx].name;
+						self.addControls(root, path, prevFilename);
+						player.src = path + prevFilename;
+						player.play();
+					});
+					
+					$("#next").on("click", (e) => {
+						e.preventDefault();
+						let player = document.getElementById('player');
+						player.pause();
+						idx += 1;
+						let nextFilename = response.items[idx].name;
+						self.addControls(root, path, nextFilename);
+						player.src = path + nextFilename;
+						player.play();
+					});
+				});
+
+			}
 		}
 
 		class PlayerFactory {

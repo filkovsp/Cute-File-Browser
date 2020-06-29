@@ -213,7 +213,7 @@ $(function(){
 				flag = 0;
 
 			for(var i=0;i<path.length;i++){
-				for(var j=0;j<demo.length;j++){
+				for(var j = 0; j < demo.length; j++){
 					if(demo[j].name === path[i]){
 						flag = 1;
 						demo = demo[j].items;
