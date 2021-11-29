@@ -1,24 +1,11 @@
 <?php
 
-$dir = "files";
-
-if ($_GET["dir"]) {
-	$dir = $_GET["dir"];
-}
-
-// Run the recursive function 
-
-$response = scan($dir);
-
-
 // This function scans the files folder recursively, and builds a large array
-
-function scan($dir){
+function scan($dir) {
 
 	$files = array();
 
 	// Is there actually such a folder/file?
-
 	if(file_exists($dir)){
 	
 		foreach(scandir($dir) as $f) {
@@ -50,19 +37,20 @@ function scan($dir){
 					"size" => filesize($dir . '/' . $f) // Gets the size of this file
 				);
 			}
-		}
-	
+		}	
 	}
 
 	return $files;
 }
 
+// check if `dir` GET param is set:
+$dir = isset($_GET["dir"]) ? $_GET["dir"] : "files";
 
+// scan directories:
+$response = scan($dir);
 
 // Output the directory listing as JSON
-
 header('Content-type: application/json');
-
 echo json_encode(array(
 	"name" => "files",
 	"type" => "folder",
